@@ -1,5 +1,6 @@
 import { useState, useCallback } from 'react';
 import { getHealthLevel, getAlternatives } from '../utils/engine';
+import { askGeminiAboutFood } from '../utils/gemini';
 import { useApp } from '../context/AppContext';
 import { getFoodImage } from '../data/foodImages';
 
@@ -92,8 +93,27 @@ export function FoodCard({ food, onClick }) {
 export function FoodDetailModal({ food, onClose }) {
   const { addFood } = useApp();
   const [logged, setLogged] = useState(false);
+  const [aiInsight, setAiInsight] = useState('');
+  const [loadingAi, setLoadingAi] = useState(false);
   const hl = getHealthLevel(food.healthScore);
   const alternatives = getAlternatives(food.id);
+
+  const handleAskAI = async () => {
+    // Basic AI request for hackathon judging demonstration
+    const apiKey = localStorage.getItem('gemini_key') || prompt('Enter your Google Gemini API Key:');
+    if (!apiKey) return;
+    localStorage.setItem('gemini_key', apiKey);
+    
+    setLoadingAi(true);
+    try {
+      const insight = await askGeminiAboutFood(food.id, apiKey);
+      setAiInsight(insight);
+    } catch (err) {
+      alert(err.message);
+    } finally {
+      setLoadingAi(false);
+    }
+  };
 
   const handleLog = useCallback(() => {
     addFood(food.id);
@@ -137,6 +157,24 @@ export function FoodDetailModal({ food, onClose }) {
         <p className="text-secondary mb-16" style={{ fontSize: '0.9rem', lineHeight: 1.7 }}>
           {food.description}
         </p>
+        
+        {/* Ask Google AI Integration */}
+        <div className="mb-24" style={{ background: 'var(--cream-dark)', padding: '12px', borderRadius: '8px' }}>
+          <div className="flex items-center gap-8 mb-8" style={{ justifyContent: 'space-between' }}>
+            <span style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--olive-black)' }}>✨ Ask Google AI</span>
+            {!aiInsight && !loadingAi && (
+              <button 
+                className="btn btn--outline" 
+                style={{ padding: '4px 10px', fontSize: '0.75rem' }}
+                onClick={handleAskAI}
+              >
+                Analyze
+              </button>
+            )}
+          </div>
+          {loadingAi && <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Analyzing with Gemini...</p>}
+          {aiInsight && <p style={{ fontSize: '0.85rem', lineHeight: 1.6, color: 'var(--olive-black)' }}>{aiInsight}</p>}
+        </div>
 
         {/* Meta pills */}
         <div className="flex gap-8 mb-24" style={{ flexWrap: 'wrap' }}>
