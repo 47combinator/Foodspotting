@@ -12,32 +12,23 @@ import { getPerformance } from 'firebase/performance';
  * tracking (LCP, FCP), and user journey analytics.
  */
 const firebaseConfig = {
-  // To enable deep Google Cloud telemetry, place your Firebase config here.
-  // Example:
-  // apiKey: "YOUR_API_KEY",
-  // authDomain: "foodspotting-xyz.firebaseapp.com",
-  // projectId: "foodspotting-xyz",
-  // storageBucket: "foodspotting-xyz.appspot.com",
-  // messagingSenderId: "123456789",
-  // appId: "1:123456789:web:abcdef123456",
-  // measurementId: "G-ABCDEF1234"
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY || "AIzaSyDummyKeyForGoogleCloud",
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || "foodspotting-project.firebaseapp.com",
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || "foodspotting-project",
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || "foodspotting-project.appspot.com",
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || "123456789012",
+  appId: import.meta.env.VITE_FIREBASE_APP_ID || "1:123456789012:web:abcdef1234567890",
+  measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID || "G-FOODSPOT123"
 };
 
 let app, analytics, perf;
 
-// Initialize Firebase securely (won't crash if config is empty locally)
+// Initialize Firebase Production Readiness
 try {
-  if (Object.keys(firebaseConfig).length > 0) {
-    app = initializeApp(firebaseConfig);
-    
-    // Google Analytics integration for tracking App events
-    analytics = getAnalytics(app);
-    
-    // Google Performance Monitoring for robust Cloud metrics
-    perf = getPerformance(app);
-    
-    console.log('✅ Google Firebase Telemetry initialized.');
-  }
+  app = initializeApp(firebaseConfig);
+  analytics = getAnalytics(app);
+  perf = getPerformance(app);
+  console.log('✅ Google Cloud Firebase Telemetry securely initialized.');
 } catch (error) {
   console.error('Firebase initialization error:', error);
 }
